@@ -36,7 +36,8 @@ impl GameState {
         }
         let mut board = self.board.clone();
         board[mov.from] = Slot::Empty;
-        board.is_all_empty(mov.from, mov.to) && board.is_all_empty(mov.to, mov.arrow)
+        mov.from.to(mov.to).all(|p| board[p].is_empty())
+            && mov.to.to(mov.arrow).all(|p| board[p].is_empty())
     }
     pub fn do_move(&mut self, mov: Move) {
         let source = self.board[mov.from];
@@ -57,8 +58,16 @@ impl GameState {
         }
         res
     }
+    pub fn find_movable_amazons(&self) -> Vec<Pos> {
+        self.find_amazons()
+            .into_iter()
+            .filter(|&a| !self.board.is_trapped(a))
+            .collect()
+    }
     pub fn is_finished(&self) -> bool {
-        self.find_amazons().into_iter().all(|p| self.board.is_trapped(p))
+        self.find_amazons()
+            .into_iter()
+            .all(|p| self.board.is_trapped(p))
     }
     pub fn winner(&self) -> Option<Player> {
         if self.is_finished() {

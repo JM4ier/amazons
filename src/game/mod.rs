@@ -3,8 +3,8 @@ pub mod game;
 pub mod r#move;
 pub mod player;
 pub mod pos;
+pub mod show;
 pub mod state;
 pub mod strat;
-pub mod show;
 
-pub use {board::*, game::*, r#move::*, player::*, pos::*, state::*, strat::Strategy};
+pub use {board::*, game::*, player::*, pos::*, r#move::*, state::*, strat::Strategy};

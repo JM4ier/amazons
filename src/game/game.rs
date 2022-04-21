@@ -43,8 +43,9 @@ impl Game {
             self.do_move(mov);
             mov
         } else {
+            eprintln!("{}", self.state.board.display(&BoardStyle::default()));
             panic!(
-                "Player {:?} with strategy {} tried to do the illegal move {}.",
+                "Player {:?} with strategy '{}' tried to do the illegal move {}.",
                 self.state.turn,
                 player.name(),
                 mov

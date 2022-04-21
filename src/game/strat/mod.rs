@@ -1,7 +1,9 @@
 use super::*;
 
 pub mod snail;
-pub use snail::*;
+pub mod true_random;
+
+pub use {snail::*, true_random::*};
 
 pub trait Strategy {
     fn name(&self) -> String;

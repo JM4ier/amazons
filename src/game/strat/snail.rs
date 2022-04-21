@@ -37,7 +37,7 @@ macro_rules! __snail__ {
                 Box::new(self.clone())
             }
         }
-    }
+    };
 }
 
 __snail__!(RandomSnail, shuffle);

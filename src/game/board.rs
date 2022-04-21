@@ -8,17 +8,6 @@ pub const BOARD_LEN: usize = 10;
 pub struct Board([[Slot; BOARD_LEN]; BOARD_LEN]);
 
 impl Board {
-    pub fn is_all_empty(&self, mut a: Pos, b: Pos) -> bool {
-        while {
-            if !self[a].is_empty() {
-                return false;
-            }
-            a = a.towards(b);
-            a != b
-        } {}
-        true
-    }
-
     pub fn is_trapped(&self, p: Pos) -> bool {
         p.neighbors().into_iter().all(|p| !self[p].is_empty())
     }
@@ -47,6 +36,43 @@ impl Board {
             buf += "\n";
         }
         buf
+    }
+
+    #[inline]
+    pub fn contains(&self, pos: impl Into<Pos>) -> bool {
+        let pos = pos.into();
+        pos.x < BOARD_LEN as _ && pos.y < BOARD_LEN as _
+    }
+
+    /// Returns a vector of the furthest possible reachable positions
+    pub fn reachable_from(&self, p: Pos) -> Vec<Pos> {
+        let dirs = [0u8, 1u8, u8::MAX];
+
+        let mut res = vec![];
+        for &dir_x in &dirs {
+            for &dir_y in &dirs {
+                if (dir_x, dir_y) == (0, 0) {
+                    continue;
+                }
+
+                let mut q = (p.x, p.y);
+                let mut n = q;
+                let mut possible = false;
+                while {
+                    n = (q.0.wrapping_add(dir_x), q.1.wrapping_add(dir_y));
+                    self.contains(n) && self[n].is_empty()
+                } {
+                    q = n;
+                    possible = true;
+                }
+
+                if possible {
+                    res.push(q.into())
+                }
+            }
+        }
+
+        res
     }
 }
 

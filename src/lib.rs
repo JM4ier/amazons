@@ -1,8 +1,7 @@
-pub mod game;
 mod ansi;
+pub mod game;
 
 pub use game::*;
-
 
 pub fn repeat_games(strats: Vec<Box<dyn Strategy>>, reps: usize) {
     let mut wins = vec![vec![(0, 0); strats.len()]; strats.len()];
@@ -40,9 +39,15 @@ pub fn repeat_games(strats: Vec<Box<dyn Strategy>>, reps: usize) {
             let wt = w0 + w1;
             let et = e0 + e1;
             println!(
-                "{: >20} vs {: >20}: {:0>4}-{:0>4} / {:0>4}-{:0>4} / {:0>4}-{:0>4}", 
-                strats[a].name(), strats[b].name(),
-                w0, e0, w1, e1, wt, et
+                "{: >20} vs {: >20}: {:0>4}-{:0>4} / {:0>4}-{:0>4} / {:0>4}-{:0>4}",
+                strats[a].name(),
+                strats[b].name(),
+                w0,
+                e0,
+                w1,
+                e1,
+                wt,
+                et
             );
         }
     }
