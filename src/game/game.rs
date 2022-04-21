@@ -40,7 +40,7 @@ impl Game {
         };
         let mov = player.find_move(&self.state);
         if self.state.legal_move(mov) {
-            self.state.do_move(mov);
+            self.do_move(mov);
             mov
         } else {
             panic!(
@@ -58,5 +58,24 @@ impl Game {
         }
         self.state.turn.enemy()
     }
+
+    /// an iterator representing the moves of the remaining game
+    pub fn as_iter(&mut self) -> GameIter {
+        GameIter { game: self }
+    }
 }
 
+pub struct GameIter<'a> {
+    game: &'a mut Game,
+}
+
+impl Iterator for GameIter<'_> {
+    type Item = Move;
+    fn next(&mut self) -> Option<Move> {
+        if self.game.state.is_finished() {
+            None
+        } else {
+            Some(self.game.next_move())
+        }
+    }
+}
