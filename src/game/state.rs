@@ -57,4 +57,14 @@ impl GameState {
         }
         res
     }
+    pub fn is_finished(&self) -> bool {
+        self.find_amazons().into_iter().all(|p| self.board.is_trapped(p))
+    }
+    pub fn winner(&self) -> Option<Player> {
+        if self.is_finished() {
+            Some(self.turn.enemy())
+        } else {
+            None
+        }
+    }
 }
