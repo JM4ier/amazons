@@ -78,3 +78,7 @@ impl Style {
         format!("{}m{}{}0m", self.0, thing, CSI)
     }
 }
+
+pub fn clear_screen() {
+    println!("{0}2J{0};H", CSI)
+}
