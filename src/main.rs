@@ -354,6 +354,9 @@ fn repeat_games(strats: Vec<Box<dyn Strategy>>, reps: usize) {
 
     for (ai, a) in strats.iter().enumerate() {
         for (bi, b) in strats.iter().enumerate() {
+            if bi > ai {
+                continue;
+            }
             for _ in 0..reps {
                 let winner0 = Game {
                     state: GameState::new(),
@@ -381,10 +384,13 @@ fn repeat_games(strats: Vec<Box<dyn Strategy>>, reps: usize) {
 
     for a in 0..strats.len() {
         for b in 0..strats.len() {
+            if b > a {
+                continue;
+            }
             let (w0, w1) = wins[a][b];
-            let (e0, e1) = (2 * reps - w0, 2 * reps - w1);
+            let (e0, e1) = wins[b][a];
             let wt = w0 + w1;
-            let et = 4 * reps - wt;
+            let et = e0 + e1;
             println!(
                 "{: >20} vs {: >20}: {:0>4}-{:0>4} / {:0>4}-{:0>4} / {:0>4}-{:0>4}", 
                 strats[a].name(), strats[b].name(),
@@ -392,9 +398,8 @@ fn repeat_games(strats: Vec<Box<dyn Strategy>>, reps: usize) {
             );
         }
     }
-
 }
 
 fn main() {
-    repeat_games(vec![Box::new(RandomSnail), Box::new(DeterministicSnail)], 10000);
+    repeat_games(vec![Box::new(RandomSnail), Box::new(DeterministicSnail)], 1000);
 }
