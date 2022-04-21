@@ -271,6 +271,13 @@ impl Game {
             );
         }
     }
+    /// plays the current game to the end and returns the winner
+    pub fn finish(&mut self) -> Player {
+        while !self.is_finished() {
+            self.next_move();
+        }
+        self.state.turn.enemy()
+    }
     pub fn is_finished(&self) -> bool {
         self.state.find_amazons().into_iter().all(|p| self.state.board.is_trapped(p))
     }
@@ -279,19 +286,15 @@ impl Game {
 pub trait Strategy {
     fn name(&self) -> String;
     fn find_move(&mut self, board: &GameState) -> Move;
+    fn dup(&self) -> Box<dyn Strategy>;
 }
 
-pub struct RandomSnail;
 
-impl Strategy for RandomSnail {
-    fn name(&self) -> String {
-        "Random_Snail".into()
-    }
-    fn find_move(&mut self, state: &GameState) -> Move {
-        let mut rng = rand::thread_rng();
+macro_rules! __snail_move__ {
+    ($state:ident, $shuffle:expr) => {
+        let state = $state;
         let mut amzs = state.find_amazons();
-
-        amzs.shuffle(&mut rng);
+        $shuffle(&mut amzs);
 
         for a in amzs {
             let mut moves = a
@@ -300,7 +303,7 @@ impl Strategy for RandomSnail {
                 .filter(|&m| state.board[m].is_empty())
                 .collect::<Vec<_>>();
 
-            moves.shuffle(&mut rng);
+            $shuffle(&mut moves);
             if moves.len() > 0 {
                 return Move {
                     from: a,
@@ -314,19 +317,84 @@ impl Strategy for RandomSnail {
     }
 }
 
-fn main() {
-    let style = BoardStyle::default();
-    let mut game = Game {
-        state: GameState::new(),
-        white: Box::new(RandomSnail),
-        black: Box::new(RandomSnail),
-    };
-    while !game.is_finished() {
-        //ansi::clear_screen();
-        game.next_move();
-        println!("{}", game.state.display(&style));
-        thread::sleep(time::Duration::from_secs_f64(0.1));
+#[derive(Copy, Clone)]
+pub struct RandomSnail;
+fn shuffle<T>(v: &mut Vec<T>) {
+    v.shuffle(&mut rand::thread_rng());
+}
+impl Strategy for RandomSnail {
+    fn name(&self) -> String {
+        "Random_Snail".into()
+    }
+    fn find_move(&mut self, state: &GameState) -> Move {
+        __snail_move__!(state, shuffle);
+    }
+    fn dup(&self) -> Box<dyn Strategy> {
+        Box::new(self.clone())
+    }
+}
+
+#[derive(Copy, Clone)]
+pub struct DeterministicSnail;
+fn no_shuffle<T>(_: &mut Vec<T>) {}
+impl Strategy for DeterministicSnail {
+    fn name(&self) -> String {
+        "Deterministic_Snail".into()
+    }
+    fn find_move(&mut self, state: &GameState) -> Move {
+        __snail_move__!(state, no_shuffle);
+    }
+    fn dup(&self) -> Box<dyn Strategy> {
+        Box::new(self.clone())
+    }
+}
+
+fn repeat_games(strats: Vec<Box<dyn Strategy>>, reps: usize) {
+    let mut wins = vec![vec![(0, 0); strats.len()]; strats.len()];
+
+    for (ai, a) in strats.iter().enumerate() {
+        for (bi, b) in strats.iter().enumerate() {
+            for _ in 0..reps {
+                let winner0 = Game {
+                    state: GameState::new(),
+                    white: a.dup(),
+                    black: b.dup(),
+                }.finish();
+                let winner1 = Game {
+                    state: GameState::new(),
+                    white: b.dup(),
+                    black: a.dup(),
+                }.finish();
+                if winner0 == Player::White {
+                    wins[ai][bi].0 += 1;
+                } else {
+                    wins[bi][ai].1 += 1;
+                }
+                if winner1 == Player::White {
+                    wins[bi][ai].0 += 1;
+                } else {
+                    wins[ai][bi].1 += 1;
+                }
+            }
+        }
     }
 
-    println!("Oopsie Woopsie, Player {:?} is stuck :((", game.state.turn);
+    for a in 0..strats.len() {
+        for b in 0..strats.len() {
+            let (w0, w1) = wins[a][b];
+            let (e0, e1) = (2 * reps - w0, 2 * reps - w1);
+            let wt = w0 + w1;
+            let et = 4 * reps - wt;
+            println!(
+                "{: >20} vs {: >20}: {:0>4}-{:0>4} / {:0>4}-{:0>4} / {:0>4}-{:0>4}", 
+                strats[a].name(), strats[b].name(),
+                w0, e0, w1, e1, wt, et
+            );
+        }
+    }
+
+}
+
+fn main() {
+    repeat_games(vec![Box::new(RandomSnail), Box::new(DeterministicSnail)], 10000);
 }
