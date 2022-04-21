@@ -1,6 +1,8 @@
 mod ansi;
 use ansi::{Color, Style, StyleElem};
 
+use std::fmt;
+
 #[repr(u8)]
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum Player {
@@ -24,13 +26,29 @@ impl Default for Slot {
 pub const BOARD_LEN: usize = 10;
 pub type Board = [[Slot; BOARD_LEN]; BOARD_LEN];
 
-pub type Pos = (u8, u8);
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub struct Pos {
+    pub x: u8,
+    pub y: u8,
+}
+
+impl fmt::Display for Pos {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}{}", (self.x + 0x61u8) as char, self.y)
+    }
+}
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Move {
     pub from: Pos,
     pub to: Pos,
     pub arrow: Pos,
+}
+
+impl fmt::Display for Move {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}/{}/{}", self.from, self.to, self.arrow)
+    }
 }
 
 #[derive(PartialEq, Eq, Clone)]
@@ -50,11 +68,11 @@ pub struct BoardStyle {
 impl Default for BoardStyle {
     fn default() -> Self {
         Self {
-            checker_light: Style::new().with(Color::White.bg_bright()),
-            checker_dark: Style::new().with(Color::White.bg()),
-            amazon_light: Style::new().with(Color::Black.fg_bright()),
-            amazon_dark: Style::new().with(Color::Black.fg()).with(StyleElem::bold()),
-            arrow: Style::new().with(Color::Black.fg()).with(StyleElem::bold()),
+            checker_light: Style::from(Color::White.bg_bright()),
+            checker_dark: Style::from(Color::White.bg()),
+            amazon_light: Style::from(Color::Black.fg_bright()),
+            amazon_dark: Style::from(Color::Black.fg()).with(StyleElem::bold()),
+            arrow: Style::from(Color::Black.fg()).with(StyleElem::bold()),
         }
     }
 }

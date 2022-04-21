@@ -4,6 +4,7 @@ const CSI: &str = "\x1B[";
 
 #[repr(u8)]
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
+#[allow(unused)]
 pub enum Color {
     Reset = 0,
     Black = 30,
@@ -49,6 +50,12 @@ __color_code__!(fg 0, bg 10, fg_bright 60, bg_bright 70);
 
 #[derive(Clone)]
 pub struct Style(String, bool);
+
+impl<T: Into<StyleElem>> From<T> for Style {
+    fn from(style_elem: T) -> Self {
+        Self::new().with(style_elem)
+    }
+}
 
 impl Style {
     pub fn new() -> Self {
