@@ -10,20 +10,18 @@ impl Strategy for Random {
     }
     fn find_move(&mut self, board: &GameState) -> Move {
         let mut rng = rand::thread_rng();
-        let mut amazons = board.find_movable_amazons();
-        amazons.shuffle(&mut rng);
-        let amazon = amazons[0];
+        let amazons = board.find_movable_amazons();
+        let amazon = amazons[rng.gen_range(0..amazons.len())];
 
         let mut board = board.board.clone();
 
         let mut sample_rand = |board: &Board, pos| {
-            let mut targets = board
+            let targets = board
                 .reachable_from(pos)
                 .into_iter()
                 .flat_map(|t| pos.to(t))
                 .collect::<Vec<_>>();
-            targets.shuffle(&mut rng);
-            targets[0]
+            targets[rng.gen_range(0..targets.len())]
         };
 
         let target = sample_rand(&board, amazon);

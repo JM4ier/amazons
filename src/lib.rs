@@ -3,12 +3,12 @@ pub mod game;
 
 pub use game::*;
 
-pub fn repeat_games(strats: Vec<Box<dyn Strategy>>, reps: usize) {
+pub fn repeat_games(strats: Vec<Box<dyn Strategy>>, reps: usize, self_games: bool) {
     let mut wins = vec![vec![(0, 0); strats.len()]; strats.len()];
 
     for (ai, a) in strats.iter().enumerate() {
         for (bi, b) in strats.iter().enumerate() {
-            if bi > ai {
+            if bi > ai || (bi == ai && !self_games) {
                 continue;
             }
             for _ in 0..reps {
@@ -31,7 +31,7 @@ pub fn repeat_games(strats: Vec<Box<dyn Strategy>>, reps: usize) {
 
     for a in 0..strats.len() {
         for b in 0..strats.len() {
-            if b > a {
+            if b > a || (b == a && !self_games) {
                 continue;
             }
             let (w0, w1) = wins[a][b];

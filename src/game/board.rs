@@ -56,7 +56,7 @@ impl Board {
                 }
 
                 let mut q = (p.x, p.y);
-                let mut n ;
+                let mut n;
                 let mut possible = false;
                 while {
                     n = (q.0.wrapping_add(dir_x), q.1.wrapping_add(dir_y));
