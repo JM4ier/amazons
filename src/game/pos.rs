@@ -9,6 +9,11 @@ pub struct Pos {
 
 impl Pos {
     #[inline]
+    pub fn distance_to(self, other: Self) -> u8 {
+        self.x.abs_diff(other.x).max(self.y.abs_diff(other.y))
+    }
+
+    #[inline]
     pub fn is_reachable(self, other: Self) -> bool {
         let xd = self.x.abs_diff(other.x);
         let yd = self.y.abs_diff(other.y);

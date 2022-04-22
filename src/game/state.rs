@@ -46,17 +46,15 @@ impl GameState {
         self.board[mov.arrow] = Slot::Arrow;
         self.turn = self.turn.enemy();
     }
+    pub fn undo_move(&mut self, mov: Move) {
+        self.board[mov.arrow] = Slot::Empty;
+        self.board[mov.from] = self.board[mov.to];
+        self.board[mov.to] = Slot::Empty;
+        self.turn = self.turn.enemy();
+    }
+    #[inline]
     pub fn find_amazons(&self) -> Vec<Pos> {
-        let mut res = Vec::with_capacity(4);
-        for x in 0..BOARD_LEN {
-            for y in 0..BOARD_LEN {
-                let (x, y) = (x as u8, y as u8);
-                if self.board[(x, y)] == Slot::Amazon(self.turn) {
-                    res.push((x, y).into());
-                }
-            }
-        }
-        res
+        self.board.find_amazons(self.turn)
     }
     pub fn find_movable_amazons(&self) -> Vec<Pos> {
         self.find_amazons()

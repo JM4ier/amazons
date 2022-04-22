@@ -7,9 +7,10 @@ fn main() {
             Box::new(strat::RandomSnail),
             Box::new(strat::Snail),
             Box::new(strat::Random),
+            Box::new(strat::LookAhead::with_depth(1)),
         ],
-        10000,
+        100,
     );
-    let mut game = Game::new(Box::new(strat::RandomSnail), Box::new(strat::Random));
+    //let mut game = Game::new(Box::new(strat::Snail), Box::new(strat::Random));
     //show::display_game(&mut game.as_iter());
 }

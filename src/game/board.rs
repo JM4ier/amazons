@@ -56,7 +56,7 @@ impl Board {
                 }
 
                 let mut q = (p.x, p.y);
-                let mut n = q;
+                let mut n ;
                 let mut possible = false;
                 while {
                     n = (q.0.wrapping_add(dir_x), q.1.wrapping_add(dir_y));
@@ -72,6 +72,19 @@ impl Board {
             }
         }
 
+        res
+    }
+
+    pub fn find_amazons(&self, player: Player) -> Vec<Pos> {
+        let mut res = Vec::with_capacity(4);
+        for x in 0..BOARD_LEN {
+            for y in 0..BOARD_LEN {
+                let (x, y) = (x as u8, y as u8);
+                if self[(x, y)] == Slot::Amazon(player) {
+                    res.push((x, y).into());
+                }
+            }
+        }
         res
     }
 }

@@ -6,6 +6,7 @@ pub enum Player {
 }
 
 impl Player {
+    #[inline]
     pub fn enemy(self) -> Self {
         match self {
             Self::White => Self::Black,
