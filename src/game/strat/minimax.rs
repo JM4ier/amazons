@@ -11,32 +11,6 @@ impl Minimax {
     }
 }
 
-fn value(player: Player, board: &Board) -> i32 {
-    let a = board
-        .find_amazons(player)
-        .into_iter()
-        .map(|a| {
-            board
-                .reachable_from(a)
-                .into_iter()
-                .map(|p| a.distance_to(p) as i32)
-                .sum::<i32>()
-        })
-        .sum();
-    let b = board
-        .find_amazons(player)
-        .into_iter()
-        .map(|a| board.reach_count(a) as i32)
-        .sum();
-    assert_eq!(a, b);
-    a
-}
-
-#[inline]
-fn total_value(player: Player, board: &Board) -> i32 {
-    value(player, board) - value(player.enemy(), board)
-}
-
 fn alpha_beta(
     state: &mut GameState,
     mut alpha: i32,
@@ -44,7 +18,7 @@ fn alpha_beta(
     depth: usize,
 ) -> (i32, Option<Move>) {
     if depth == 0 {
-        return (total_value(state.turn, &state.board), None);
+        return (Reachability.eval(state.turn, &state.board), None);
     }
 
     if state.is_finished() {
@@ -55,9 +29,11 @@ fn alpha_beta(
 
     for _ in 0..1000 {
         let mov = Random.find_move(state);
+
         state.do_move(mov);
         let score = -alpha_beta(state, -beta, -alpha, depth - 1).0;
         state.undo_move(mov);
+
         if score >= beta {
             return (beta, best.or(Some(mov)));
         }
