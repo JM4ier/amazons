@@ -12,7 +12,7 @@ impl Minimax {
 }
 
 fn value(player: Player, board: &Board) -> i32 {
-    board
+    let a = board
         .find_amazons(player)
         .into_iter()
         .map(|a| {
@@ -22,7 +22,14 @@ fn value(player: Player, board: &Board) -> i32 {
                 .map(|p| a.distance_to(p) as i32)
                 .sum::<i32>()
         })
-        .sum()
+        .sum();
+    let b = board
+        .find_amazons(player)
+        .into_iter()
+        .map(|a| board.reach_count(a) as i32)
+        .sum();
+    assert_eq!(a, b);
+    a
 }
 
 #[inline]
@@ -52,7 +59,7 @@ fn alpha_beta(
         let score = -alpha_beta(state, -beta, -alpha, depth - 1).0;
         state.undo_move(mov);
         if score >= beta {
-            return (beta, Some(mov));
+            return (beta, best.or(Some(mov)));
         }
         if score > alpha {
             alpha = score;

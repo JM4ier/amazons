@@ -48,7 +48,7 @@ impl Board {
     pub fn reachable_from(&self, p: Pos) -> Vec<Pos> {
         let dirs = [0u8, 1u8, u8::MAX];
 
-        let mut res = vec![];
+        let mut res = Vec::with_capacity(8);
         for &dir_x in &dirs {
             for &dir_y in &dirs {
                 if (dir_x, dir_y) == (0, 0) {
@@ -73,6 +73,39 @@ impl Board {
         }
 
         res
+    }
+
+    pub fn reach_count(&self, p: Pos) -> usize {
+        let mut count = 0;
+
+        macro_rules! _loop {
+            ($count:ident, $p:ident, $( ( $opx:tt $valx:expr , $opy:tt $valy:expr ) ),*) => {
+                let mut q;
+                $(
+                    q = $p;
+                    while {
+                        q.x = q.x $opx $valx;
+                        q.y = q.y $opy $valy;
+                        self.contains(q) && self[q].is_empty()
+                    } {
+                        $count += 1;
+                    }
+                )*
+            }
+        };
+
+        _loop!(count, p,
+            (- 1 , - 1),
+            (- 1 , + 0),
+            (- 1 , + 1),
+            (+ 0 , - 1),
+            (+ 0 , + 1),
+            (+ 1 , - 1),
+            (+ 1 , + 0),
+            (+ 1 , + 1)
+        );
+
+        count
     }
 
     pub fn find_amazons(&self, player: Player) -> Vec<Pos> {
@@ -105,6 +138,7 @@ impl<T: Into<Pos>> IndexMut<T> for Board {
 }
 
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
+#[repr(u8)]
 pub enum Slot {
     Empty,
     Arrow,
@@ -112,7 +146,7 @@ pub enum Slot {
 }
 
 impl Slot {
-    #[inline]
+    #[inline(always)]
     pub fn is_empty(self) -> bool {
         matches!(self, Self::Empty)
     }
@@ -142,4 +176,39 @@ impl Default for BoardStyle {
             arrow: Style::from(Color::Black.fg()).with(StyleElem::bold()),
         }
     }
+}
+
+#[test]
+fn correct_distance() {
+    let mut board = Board::default();
+
+    use rand::prelude::*;
+    let mut rng = rand::thread_rng();
+
+    for _ in 0..50 {
+        let x = rng.gen_range(0..10);
+        let y = rng.gen_range(0..10);
+        if board[(x, y)].is_empty() {
+            board[(x, y)] = Slot::Arrow;
+        }
+    }
+
+    let sum_a = board
+        .find_amazons(Player::Black)
+        .into_iter()
+        .map(|a| {
+            board
+                .reachable_from(a)
+                .into_iter()
+                .map(|p| a.distance_to(p) as i32)
+                .sum::<i32>()
+        })
+        .sum::<i32>();
+
+    let sum_b = board
+        .find_amazons(Player::Black)
+        .into_iter()
+        .map(|a| board.reach_count(a) as i32)
+        .sum();
+    assert_eq!(sum_a, sum_b);
 }
